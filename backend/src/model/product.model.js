@@ -32,9 +32,15 @@ const productSchema = new mongoose.Schema({
         ref: 'Category'
     },
 
-    seller : { 
+    /* seller : { 
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+    }, */
+
+    user : { 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     },
 
     stock : { 
