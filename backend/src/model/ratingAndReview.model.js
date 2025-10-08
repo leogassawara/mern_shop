@@ -28,4 +28,5 @@ const RatingAndReviewSchema = new mongoose.Schema({
     timestamps: true
 })
 
-export default mongoose.model('RatingAndReview', RatingAndReviewSchema);
+const RatingAndReview = mongoose.model('RatingAndReview', RatingAndReviewSchema);
+export default RatingAndReview;

@@ -28,3 +28,21 @@ const authMiddleware = (req, res, next) => {
         console.error(err);
     }
 }
+
+
+export const sellerAuthenticate = (req, res, next) => {
+    try {
+        if(req.user.role !== 'Buyer') {
+            return res.status(401).json({ 
+                message: 'Você não é um vendedor.' 
+            });
+        }
+        
+        next();
+    }
+    catch (err) {
+        return res.status(401).json({ 
+            message: 'Token invalido.' 
+        });
+    }
+}
