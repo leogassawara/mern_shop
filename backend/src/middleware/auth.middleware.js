@@ -29,7 +29,6 @@ const authMiddleware = (req, res, next) => {
     }
 }
 
-
 export const sellerAuthenticate = (req, res, next) => {
     try {
         if(req.user.role !== 'Buyer') {
