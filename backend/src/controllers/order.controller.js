@@ -186,7 +186,3 @@ export const cancelOrder = async (req, res) => {
     }
 }
 
-// Deliver an order
-
-
-// Delete an order
