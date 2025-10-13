@@ -1,7 +1,7 @@
-import Product from "../models/product.model.js";
-import User from "../models/user.model.js";
-import Order from "../models/order.model.js";
-import Admin from "../models/admin.model.js";
+import Product from "../model/product.model.js";
+import User from "../model/user.model.js";
+import Order from "../model/order.model.js";
+import Admin from "../model/admin.model.js";
 
 // Create a new order
 export const createOrder = async (req, res) => {

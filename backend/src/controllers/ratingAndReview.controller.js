@@ -1,5 +1,5 @@
-import Product from "../models/product.model.js";
-import RatingAndReview from "../models/ratingAndReview.model.js";
+import Product from "../model/product.model.js";
+import RatingAndReview from "../model/ratingAndReview.model.js";
 
 // Create a new rating and review
 export const createRatingAndReview = async (req, res) => {
@@ -37,7 +37,7 @@ export const createRatingAndReview = async (req, res) => {
             });
         }
 
-        const newRatingAndReview = new RatingAndReview.create({
+        const newRatingAndReview = await RatingAndReview.create({
             user: userId,
             product: productId,
             rating: rating,

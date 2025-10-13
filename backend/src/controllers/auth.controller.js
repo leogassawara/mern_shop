@@ -1,4 +1,4 @@
-import User from '../models/user.model.js';
+import User from '../model/user.model.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -69,12 +69,7 @@ export const login = async (req, res) => {
             });
         }
 
-        const token = jwt.sign({
-            id: user._id,
-            role: user.role,
-            email: user.email
-        }, {
-            secret : process.env.JWT_SECRET,
+        const token = jwt.sign({id: user._id, role: user.role, email: user.email}, process.env.JWT_SECRET,{ 
             expiresIn: '1d'
         });
 
@@ -92,7 +87,7 @@ export const login = async (req, res) => {
     }
 }
 
-export const gtProfile = async (req, res) => {
+export const getProfile = async (req, res) => {
     try {
         const {id} = req.user;
 
@@ -106,7 +101,7 @@ export const gtProfile = async (req, res) => {
             path : "address",
             path : "cart",
             path : "orders",
-            path : "products"
+            path : "product"
         }).select('-password');
 
         if(!user) {

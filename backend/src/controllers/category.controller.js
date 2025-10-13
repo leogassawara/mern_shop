@@ -5,7 +5,7 @@ export const createCategories = async (req, res) => {
     try {
 
         // Encontrar ID do usuário
-        const userId = req.user._id;
+        const userId = req.user.id;
       
         // Pegar nome da categoria
         const { categoryName } = req.body;
@@ -41,7 +41,7 @@ export const createCategories = async (req, res) => {
             });
         }
 
-        const newCategory = new Category.create({
+        const newCategory = await Category.create({
             categoryName,
             admin : admin._id
         });

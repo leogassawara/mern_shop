@@ -1,6 +1,6 @@
 import { fileUpload } from '../config/upload.cloudinary.js';
 import Product from '../model/product.model.js';
-import User from '../models/user.model.js';
+import User from '../model/user.model.js';
 
 export const createProduct = async (req, res) => {
     try {
