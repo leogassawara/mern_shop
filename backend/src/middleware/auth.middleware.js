@@ -1,9 +1,8 @@
-import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 
 export const authMiddleware = (req, res, next) => {
     try {
-        const token = req.header.authorization;
+        const token = req.headers.authorization;
 
         if(!token) {
             return res.status(401).json({ 
@@ -18,10 +17,10 @@ export const authMiddleware = (req, res, next) => {
             next();
         }
         catch (err) {
-        console.error(err);
-        return res.status(401).json({ 
-            message: 'Token inválido. Por favor, faça login novamente.' 
-        });
+            console.error(err);
+            return res.status(401).json({ 
+                message: 'Token inválido. Por favor, faça login novamente.' 
+            });
         }
     }
     catch (err) {
@@ -31,7 +30,8 @@ export const authMiddleware = (req, res, next) => {
 
 export const sellerAuthenticate = (req, res, next) => {
     try {
-        if(req.user.role !== 'Buyer') {
+
+        if(req.user.role !== "Seller") {
             return res.status(401).json({ 
                 message: 'Você não é um vendedor.' 
             });
@@ -43,5 +43,39 @@ export const sellerAuthenticate = (req, res, next) => {
         return res.status(401).json({ 
             message: 'Token invalido.' 
         });
+    }
+}
+
+export const buyerAuthenticate = async (req, res, next) => {
+    try{
+        if(req.user.role !== "Buyer"){
+            return res.status(401).json({
+                message : "You are not a buyer"
+            })
+        }
+
+        next();
+    }
+    catch(err){
+        return res.status(401).json({
+            message : "Invalid Token"
+        })
+    }
+}
+
+export const adminAuthenticate = async (req, res, next) => {
+    try{
+        if(req.user.role !== "Admin"){
+            return res.status(401).json({
+                message : "You are not an admin"
+            });
+        }
+
+        next();
+    }
+    catch(err){
+        res.status(401).json({
+            message : "Invalid token"
+        })
     }
 }

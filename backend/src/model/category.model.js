@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import adminModel from "./admin.model";
+import adminModel from "./admin.model.js";
 
 const CategorySchema = new mongoose.Schema({
     categoryName : { 
