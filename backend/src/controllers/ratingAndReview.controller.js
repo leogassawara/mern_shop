@@ -6,6 +6,7 @@ export const createRatingAndReview = async (req, res) => {
     try {
         
         const userId = req.user._id;
+
         const productId = req.body.productId;
         const rating = req.body.rating;
         const review = req.body.review;
@@ -22,13 +23,6 @@ export const createRatingAndReview = async (req, res) => {
             });
         };
 
-        /*const user = await user.findById(userId);
-        if(!user){
-            return res.status(404).json({ 
-                message: "User not found." 
-            });
-        }*/
-
         const product = await Product.findById(productId);
 
         if(!product){
@@ -37,11 +31,30 @@ export const createRatingAndReview = async (req, res) => {
             });
         }
 
+       
+        const ratingAndReview = await RatingAndReview.findOne({
+            user : userId,
+            product : productId
+        });
+
+        if(ratingAndReview){
+            return res.status(400).json({
+                message : "You have already rated this product"
+            });
+        }
+        
         const newRatingAndReview = await RatingAndReview.create({
             user: userId,
             product: productId,
             rating: rating,
             review: review
+        });
+
+
+        await Product.findByIdAndUpdate(productId, {
+            $push : {
+                ratingAndReview : newRatingAndReview._id
+            }
         });
 
         res.status(201).json({ 

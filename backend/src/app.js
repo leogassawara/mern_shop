@@ -3,7 +3,7 @@ import authRoute from "./routes/auth.route.js";
 import productRoutes from "./routes/product.route.js";
 import categoryRoutes from "./routes/category.route.js";
 import cartRoutes from "./routes/cart.route.js";
-import orderRoutes from "./routes/cart.route.js";
+import orderRoutes from "./routes/order.route.js";
 import ratingAndReviewsRoutes from "./routes/ratingAndReview.route.js";
 import adminRoutes from "./routes/admin.route.js";
 

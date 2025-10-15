@@ -1,15 +1,15 @@
 import Product from "../model/product.model.js";
 import User from "../model/user.model.js";
 import Order from "../model/order.model.js";
-import Admin from "../model/admin.model.js";
+
 
 // Create a new order
 export const createOrder = async (req, res) => {
     try {
-        const userId = req.user._id;
-        const productId = req.body.products;
+        const userId = req.user.id;
+        const products = req.body.products;
 
-        if(!products){
+        if(!products || products.length === 0){
             return res.status(400).json({ 
                 message: "Products are required to place an order." 
             });
@@ -23,11 +23,39 @@ export const createOrder = async (req, res) => {
             });
         }
 
-        const newOrder = new Order.create({
+        let totalPrice = 0;
+        const productDetails = [];
+
+        for (const item of products){
+            const product = await Product.findById(item.productId);
+            if(!product){
+                return res.status(404).json({
+                    message : 'Product with ID ${item.productId} not found'
+                });
+            }
+
+            const quantity = item.quantity || 1;
+            const price = product.prices * quantity;
+            totalPrice += price;
+
+            productDetails.push({
+                product: product._id,
+                quantity,
+                price
+            });
+        }
+
+        const newOrder = await Order.create({
             user: userId,
-            products: products,
-            totalPrice : products.reduce((acc, curr) => acc + curr.price, 0),
+            products: productDetails,
+            totalPrice,
             status: 'Pending'
+        });
+
+        await User.findByIdAndUpdate(userId, {$unset : { cart: ""}});
+
+        await User.findByIdAndUpdate(userId,{
+            $push : { orders : newOrder._id}
         });
 
         res.status(201).json({ 
@@ -115,13 +143,19 @@ export const updateOrder = async (req, res) => {
             });
         }
 
-        /*const order = await Order.findById(orderId);
+        const order = await Order.findById(orderId);
 
         if(!order){
             return res.status(404).json({ 
                 message: "Order not found." 
             });
-        }*/
+        }
+
+        if(order.status === "Cancelled"){
+            return res.status(400).json({
+                message : "Order is Cancelled"
+            })
+        }
 
         const updatedOrder = await Order.findByIdAndUpdate(orderId, {
             status: status
@@ -164,13 +198,19 @@ export const cancelOrder = async (req, res) => {
             });
         }
 
+        if(order.status === "Shipped"){
+            return res.status(400).json({
+                message : "Order is shipped, Your are not allowed to cancel it"
+            });
+        }
+
         const updatedOrder = await Order.findByIdAndUpdate(orderId, {
             status: 'Cancelled'
         });
 
         if(!updatedOrder){
             return res.status(400).json({ 
-                message: "Order not cancelled." 
+                message: "Order not updated." 
             });
         }
 
@@ -186,3 +226,43 @@ export const cancelOrder = async (req, res) => {
     }
 }
 
+export const deleteOrder = async (req, res) => {
+    try{
+        const orderId = req.params.id;
+
+        if(!orderId){
+            return res.status(400).json({
+                message : "Please provide an order id"
+            });
+        }
+
+        const order = await Order.findById(orderId);
+
+        if(!order){
+            return res.status(400).json({
+                message : "Order not found"
+            });
+        }
+
+        if(order.status === "Cancelled" || order.status === "Delivered"){
+            await Order.findByIdAndDelete(orderId);
+
+            await User.findByIdAndUpdate(order.user, {
+                $pull : {
+                    orders : orderId
+                }
+            });
+        }
+
+        if(order.status === "Shipped" || order.status === "Pending"){
+            return res.status(400).json({
+                message : "Order is shipped, You are not allowed to delete it"
+            });
+        }
+    }
+    catch(err){
+        return res.status(500).json({
+            message : "Internal server error"
+        });
+    }
+}

@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { fileUpload } from '../config/upload.cloudinary.js';
 import Product from '../model/product.model.js';
 import User from '../model/user.model.js';
@@ -5,7 +8,7 @@ import User from '../model/user.model.js';
 export const createProduct = async (req, res) => {
     try {
 
-        const userid = req.userId;
+        const userid = req.user.id;
 
         if(!userid) {
             return res.status(400).json({
@@ -21,7 +24,8 @@ export const createProduct = async (req, res) => {
             });
         }
 
-        const images = req.files.image;
+        const images = req.files;
+        console.log(images);
 
         if(!images){
             return res.status(400).json({
@@ -38,6 +42,12 @@ export const createProduct = async (req, res) => {
         }
 
         const imageURL = await fileUpload(images);
+        console.log(imageURL);
+        if(!imageURL){
+            return res.status(400).json({
+                message : "Por favor, faça upload de uma imagem."
+            })
+        }
 
         const product = await Product.create({
             name,
@@ -47,7 +57,13 @@ export const createProduct = async (req, res) => {
             category,
             stock,
             discount,
-            userId: findUser._id,
+            user: findUser._id,
+        });
+
+        await User.findOneAndUpdate(findUser._id, {
+            $push : {
+                product : product._id
+            }
         });
 
         return res.status(201).json({
@@ -65,7 +81,8 @@ export const createProduct = async (req, res) => {
 
 export const updateProduct = async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
+        console.log(id);
 
         if(!id) {
             return res.status(400).json({
@@ -74,15 +91,17 @@ export const updateProduct = async (req, res) => {
         }
 
         const userId = req.user.id;
+        console.log(userId);
 
         if(!userId) {
             return res.status(400).json({
                 message: 'Por favor, faça login para continuar.'
             });
         }
-
+        
         const { name, description, prices, category, stock, discount } = req.body;
         const product = await Product.findById(id);
+
 
         if(!product) {
             return res.status(400).json({
@@ -90,17 +109,20 @@ export const updateProduct = async (req, res) => {
             });
         }
 
-        const images = req.files.image;
-
-        if(images){
-            const imageURL = await fileUpload(images);
-            product.imageUrl = imageURL;
-        }
-
-        if(userId !== product.user) {
+    
+        if(userId !== product.user._id.toString()) {
             return res.status(400).json({
                 message: 'Você não tem permissão para atualizar este produto.'
             });
+        }
+
+        if(req.files && req.files.lenght > 0){
+            const images = req.files;
+            const imageURL = await fileUpload(images);
+
+            if(imageURL){
+                product.imageUrl = imageURL;
+            }
         }
 
         if(name){
@@ -144,7 +166,7 @@ export const updateProduct = async (req, res) => {
 
 export const deleteProduct = async (req, res) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
 
         if(!id) {
             return res.status(400).json({
@@ -168,13 +190,22 @@ export const deleteProduct = async (req, res) => {
             });
         }
 
-        if(userId !== product.user) {
+        if(userId !== product.user._id.toString()) {
             return res.status(400).json({
                 message: 'Você não tem permissão para deletar este produto.'
             });
         }
 
-        await product.delete();
+        //await product.delete();
+
+        await Product.findOneAndDelete(id);
+
+
+        await User.findByIdAndUpdate(userId, {
+            $pull : {
+                product : product._id
+            }
+        });
 
         return res.status(200).json({
             message: 'Produto deletado com sucesso.'
